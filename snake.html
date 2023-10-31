@@ -21,6 +21,10 @@
         <button id="refresh" class="button">Play Again!</button>
     </div>
 
+    <div id="food-eating-container"></div>
+    <div id="player-container"></div>
+    <div id="game-over-container"></div>
+
     <style>
         #gameCanvas {
             display: block;
@@ -109,8 +113,9 @@
         }
 
     </style>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+
         const GAME_SPEED = 100;
         const CANVAS_BORDER_COLOUR = 'black';
         const CANVAS_BACKGROUND_COLOUR = 'white';
@@ -227,118 +232,131 @@
          * change the background colour of the canvas
          * + draw border
         */
-       function clearCanvas() {
-        // select colour to fill
-        ctx.fillStyle = CANVAS_BACKGROUND_COLOUR;
-        // select colour for border
-        ctx.fillStyle = CANVAS_BORDER_COLOUR;
+        function clearCanvas() {
+            // select colour to fill
+            ctx.fillStyle = CANVAS_BACKGROUND_COLOUR;
+            // select colour for border
+            ctx.fillStyle = CANVAS_BORDER_COLOUR;
 
-        // draw a filled rectangle to cover canvas
-        ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
-        // draw a border around canvas
-        ctx.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
-       }
+            // draw a filled rectangle to cover canvas
+            ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            // draw a border around canvas
+            ctx.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
+        }
 
-       /**
+        /**
         * draw food on canvas
         */
-       function drawFood(){
-        ctx.fillStyle = FOOD_COLOUR;
-        ctx.strokestyle = FOOD_BORDER_COLOUR;
-        ctx.fillRect(foodX, foodY, 10, 10);
-        ctx.strokeRect(foodX, foodY, 10, 10);
-       }
+        function drawFood(){
+            ctx.fillStyle = FOOD_COLOUR;
+            ctx.strokestyle = FOOD_BORDER_COLOUR;
+            ctx.fillRect(foodX, foodY, 10, 10);
+            ctx.strokeRect(foodX, foodY, 10, 10);
+        }
 
-       /**
+        /**
         * moves the snake
         */
-       function advanceSnake(){
-        // create new head
-        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-        // add new head
-        snake.unshift(head);
+        function advanceSnake(){
+            // create new head
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            // add new head
+            snake.unshift(head);
 
-        const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
-        if (didEatFood){
-            // increase score
-            score += 10;
-            // display score
-            document.getElementById('score').innerHTML = score;
+            const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
+            if (didEatFood){
+                
+                // audio prompt for eating food - currently breaks the game
+                //foodEatingPlayer.playVideo();
 
-            // generate new food spawn
-            createFood();
-        } else {
-            // remove last part of snake
-            snake.pop();
+                // increase score
+                score += 10;
+                // display score
+                document.getElementById('score').innerHTML = score;
+
+                // generate new food spawn
+                createFood();
+            } else {
+                // remove last part of snake
+                snake.pop();
+            }
         }
-       }
 
-       /**
+        /**
         * returns true if head is touched by wall or
         * other part of snake
         */
-       function didGameEnd() {
-        for(let i = 4; i < snake.length; i++){
-            if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
-            return true
+        function didGameEnd() {
+            for(let i = 4; i < snake.length; i++){
+                if (snake[i].x === snake[0].x && snake[i].y === snake[0].y){
+                    gameOverPlayer.setVolume(100);
+                    gameOverPlayer.playVideo();
+                    return true;
+                }
+            }
+
+            const hitLeftWall = snake[0].x < 0;
+            const hitRightWall = snake[0].x > gameCanvas.width - 10;
+            const hitTop = snake[0].y < 0;
+            const hitBottom = snake[0].y > gameCanvas.height - 10;
+
+            if (hitLeftWall || hitRightWall || hitTop || hitBottom){
+                gameOverPlayer.setVolume(100);
+                gameOverPlayer.playVideo();
+                return true;
+            }
+
+            return false;
         }
 
-        const hitLeftWall = snake[0].x < 0;
-        const hitRightWall = snake[0].x > gameCanvas.width - 10;
-        const hitTop = snake[0].y < 0;
-        const hitBottom = snake[0].y > gameCanvas.height - 10;
-
-        return hitLeftWall || hitRightWall || hitTop || hitBottom
-       }
-
-       /**
+        /**
         * generate a random number that is multiple of 10
         */
-       function randomTen(min, max){
-        return Math.round((Math.random() * (max - min) + min) / 10) * 10;
-       }
+        function randomTen(min, max){
+            return Math.round((Math.random() * (max - min) + min) / 10) * 10;
+        }
 
-       /**
+        /**
         * creates a random set of coords for snake food
         */
-       function createFood() {
-        // generate a random number the food x-coord
-        foodX = randomTen(0, gameCanvas.width - 10);
-        // generate a random number for food y-coord
-        foodY = randomTen(0, gameCanvas.height - 10);
+        function createFood() {
+            // generate a random number the food x-coord
+            foodX = randomTen(0, gameCanvas.width - 10);
+            // generate a random number for food y-coord
+            foodY = randomTen(0, gameCanvas.height - 10);
 
-        // if new food is where snake is generate new
-        snake.forEach(function isFoodOnSnake(part) {
-            const onSnake = part.x == foodX && part.y == foodY;
-            if (onSnake) createFood();
-        });
-       }
+            // if new food is where snake is generate new
+            snake.forEach(function isFoodOnSnake(part) {
+                const onSnake = part.x == foodX && part.y == foodY;
+                if (onSnake) createFood();
+            });
+        }
 
-       /**
+        /**
         * draw snake on canvas
         */
-       function drawSnake() {
-        // loop through snake parts drawing each
-        snake.forEach(drawSnakePart);
-       }
+        function drawSnake() {
+            // loop through snake parts drawing each
+            snake.forEach(drawSnakePart);
+        }
 
-       /**
+        /**
         * draw a part of the snake
         * @param {object} snakePart - the coords where the part should be drawn
         */
-       function drawSnakePart(snakePart){
-        // set the colour
-        ctx.fillStyle = SNAKE_COLOUR;
+        function drawSnakePart(snakePart){
+            // set the colour
+            ctx.fillStyle = SNAKE_COLOUR;
 
-        // set border colour
-        ctx.strokestyle = SNAKE_BORDER_COLOUR;
+            // set border colour
+            ctx.strokestyle = SNAKE_BORDER_COLOUR;
 
-        // draw filled rectangle to rep snake part
-        ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
+            // draw filled rectangle to rep snake part
+            ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
 
-        // draw border around snake
-        ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
-       }
+            // draw border around snake
+            ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
+        }
 
        /**
         * change the vertical and horizontal velocity of the snake
@@ -348,43 +366,150 @@
         * right cannot become left
         * @param {object} event - the keydown event
         */
-       function changeDirection(event){
-        const LEFT = 65;
-        const RIGHT = 68;
-        const UP = 87;
-        const DOWN = 83;
+        function changeDirection(event){
+            const LEFT = 65;
+            const RIGHT = 68;
+            const UP = 87;
+            const DOWN = 83;
+
+            // define a delay in ms 
+            const directionChangeDelay = 500;
+
+            /**
+             * prevent snake from reversing
+             */
+            if (changingDirection) return;
+
+            changeDirection = true;
+
+            setTimeout(() => {
+                changingDirection = false;
+            }, directionChangeDelay);
+            
+
+            const keyPressed = event.keyCode;
+
+            const goingUp = dy === -10;
+            const goingDown = dy === 10;
+            const goingRight = dx === 10;
+            const goingLeft = dx === -10;
+
+            if (keyPressed === LEFT && !goingRight) {
+                dx = -10;
+                dy = 0;
+            }
+            if (keyPressed === UP && !goingDown) {
+                dx = 0;
+                dy = -10;
+            }
+            if (keyPressed === RIGHT && !goingLeft) {
+                dx = 10;
+                dy = 0;
+            }
+            if (keyPressed === DOWN && !goingUp) {
+                dx = 0;
+                dy = 10;
+            }
+        }
+
+        // Background music - plays on user initial input either click or keydown
+        var player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player-container', {
+                height: '0',   // Set the height to 0 to make the player invisible
+                width: '0',    // Set the width to 0 to make the player invisible
+                videoId: '4xDzrJKXOOY', // https://www.youtube.com/watch?v=4xDzrJKXOOY
+                playerVars: {
+                    autoplay: 1,    // Auto-play the video
+                    controls: 0,    // Hide video controls
+                    loop: 1,        // Loop the video
+                    modestbranding: 1, // Hide YouTube logo
+                    showinfo: 0,    // Hide video title and uploader info
+                    enablejsapi: 1,  // Enable the JavaScript API
+                    disablekb: 1 // disable keyboard controls
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+            initializeGameOverPlayer();
+        }
+
+        function onPlayerReady(event) {
+            // listen for keydown event
+            document.addEventListener('keydown', function(){
+                event.target.unMute(); // unmute the video
+                event.target.playVideo(); // Start playing the video
+                event.target.setVolume(10); // adjust volume between 0-100
+            })
+
+            // listen for click event
+            document.addEventListener('click', function(){
+                event.target.unMute(); // unmute the video
+                event.target.playVideo(); // Start playing the video
+                event.target.setVolume(10); // adjust volume between 0-100
+            })
+        }
+
+        // audio prompt for when the game ends
+        var gameOverPlayer;
+
+        function initializeGameOverPlayer() {
+            gameOverPlayer = new YT.Player('game-over-container', {
+                height: '0',   // Set the height to 0 to make the player invisible
+                width: '0',    // Set the width to 0 to make the player invisible
+                videoId: '4-I7_Rt4Izo', // Replace with the actual video ID for game over sound
+                playerVars: {
+                    autoplay: 0,   // Auto-play disabled initially
+                    controls: 0,   // Hide video controls
+                    modestbranding: 1, // Hide YouTube logo
+                    showinfo: 0,   // Hide video title and uploader info
+                    enablejsapi: 1,  // Enable the JavaScript API
+                    disablekb: 1 // disable keyboard controls
+                },
+                events: {
+                    'onReady': onGameOverPlayerReady
+                }
+            });
+        }
+
+        function onGameOverPlayerReady(event) {
+            event.target.unMute();
+        }
 
         /**
-         * prevent snake from reversing
+         * food eating audio prompt currently breaks the game
+         * when eating the food the snake disappears when the audio
+         * is supposed to be played
          */
-        if (changingDirection) return;
-        changeDirection = true;
 
-        const keyPressed = event.keyCode;
+        // audio prompt for eating food
+        var foodEatingPlayer;
 
-        const goingUp = dy === -10;
-        const goingDown = dy === 10;
-        const goingRight = dx === 10;
-        const goingLeft = dx === -10;
+        function initializeFoodEatingPlayer(){
+            foodEatingPlayer = new YT.Player('food-eating-player', {
+                height: '0',   // Set the height to 0 to make the player invisible
+                width: '0',    // Set the width to 0 to make the player invisible
+                videoId: 'Ia8TzPJzSX8', // Use the video ID for the food-eating sound
+                playerVars: {
+                    autoplay: 0,   // Auto-play disabled initially
+                    controls: 0,   // Hide video controls
+                    modestbranding: 1, // Hide YouTube logo
+                    showinfo: 0,   // Hide video title and uploader info
+                    enablejsapi: 1,  // Enable the JavaScript API
+                    disablekb: 1 // disable keyboard controls
+                },
+                events: {
+                    'onReady': onFoodEatingPlayerReady
+                }
+            });
+        }
 
-        if (keyPressed === LEFT && !goingRight) {
-            dx = -10;
-            dy = 0;
+        function onFoodEatingPlayerReady(event){
+            event.target.unMute();
+            event.target.setVolume(50);
         }
-        if (keyPressed === UP && !goingDown) {
-            dx = 0;
-            dy = -10;
-        }
-        if (keyPressed === RIGHT && !goingLeft) {
-            dx = 10;
-            dy = 0;
-        }
-        if (keyPressed === DOWN && !goingUp) {
-            dx = 0;
-            dy = 10;
-        }
-       }
-
     </script>
 </body>
 </html>
