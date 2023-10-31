@@ -7,8 +7,8 @@ So far the features I have added to make this tutorial my own are the following:
 * Game size selection (small, medium, large)
 * Speed increase on X score
 * Play again button
+* Background music via youtube api
+* Game over audio via youtube api
 
-I plan to add more features such as audio prompts on game ending and each time the snake eats the food,
-as well as potential background music so the game seems less boring over long periods of playing.
-
-Other features that could be added would be a scoreboard of local scores, a popup screen each time the game ends.
+I am currently working on an audio prompt each time the snake eats the food, I then plan to move onto implementing a speed selection
+option similar to the game size selection but instead for the starting speed of the snake.
