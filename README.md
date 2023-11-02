@@ -9,6 +9,6 @@ So far the features I have added to make this tutorial my own are the following:
 * Play again button
 * Background music via youtube api
 * Game over audio via youtube api
+* Starting speed selection (slow + medium, fast to be implemented)
 
-I am currently working on an audio prompt each time the snake eats the food, I then plan to move onto implementing a speed selection
-option similar to the game size selection but instead for the starting speed of the snake.
+I am still working on the audio prompt for each time the snake eats the food, I am still having issues getting it working but I believe im on the right track to solving the issue. I have implemented the option to select a starting speed which works for both slow and medium however, the fast option seems to log the correct speed but on screen does not move at a faster speed than medium does.
