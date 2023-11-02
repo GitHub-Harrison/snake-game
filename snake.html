@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake</title>
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
     <div id="score">0</div>
 
-    <div class="center">
-        <button class="canvasSize" id="smallSize">Small</button>
-        <button class="canvasSize" id="mediumSize">Medium</button>
-        <button class="canvasSize" id="largeSize">Large</button>
+    <div class="grid-container">
+        <div class="grid-item1">
+            <button class="canvasSize" id="smallSize">Small</button>
+            <button class="canvasSize" id="mediumSize">Medium</button>
+            <button class="canvasSize" id="largeSize">Large</button>
+        </div>
+        <div class="grid-item2">
+            <button class="gameSpeed" id="slowSpeed">Slow</button>
+            <button class="gameSpeed" id="mediumSpeed">Medium</button>
+            <button class="gameSpeed" id="fastSpeed">Fast</button>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -39,48 +47,70 @@
             margin-bottom: 40px;
         }
 
+        .grid-container {
+            display: grid;
+            padding: 10px;
+        }
+        .grid-container > div {
+            padding: 10px;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .grid-item1 {
+            grid-row-start: 1;
+        }
+
+        .grid-item2 {
+            grid-row-start: 2;
+        }
+
         /*
         .canvasSize button taken from https://getcssscan.com/css-buttons-examples
         button 7
         */
-        .canvasSize {
-        background-color: #0095ff;
-        border: 1px solid transparent;
-        border-radius: 3px;
-        box-shadow: rgba(255, 255, 255, .4) 0 1px 0 0 inset;
-        box-sizing: border-box;
-        color: #fff;
-        cursor: pointer;
-        display: inline-block;
-        font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
-        font-size: 13px;
-        font-weight: 400;
-        line-height: 1.15385;
-        margin: 0;
-        outline: none;
-        padding: 8px .8em;
-        position: relative;
-        text-align: center;
-        text-decoration: none;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
-        vertical-align: baseline;
-        white-space: nowrap;
+        .canvasSize, .gameSpeed {
+            background-color: #0095ff;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            box-shadow: rgba(255, 255, 255, .4) 0 1px 0 0 inset;
+            box-sizing: border-box;
+            color: #fff;
+            cursor: pointer;
+            display: inline-block;
+            font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.15385;
+            margin: 0;
+            outline: none;
+            padding: 8px .8em;
+            position: relative;
+            text-align: center;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: baseline;
+            white-space: nowrap;
         }
 
         .canvasSize:hover,
-        .canvasSize:focus {
-        background-color: #07c;
+        .canvasSize:focus,
+        .gameSpeed:hover,
+        .gameSpeed:focus {
+            background-color: #07c;
         }
 
-        .canvasSize:focus {
-        box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+        .canvasSize:focus,
+        .gameSpeed:focus {
+            box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
         }
 
-        .canvasSize:active {
-        background-color: #0064bd;
-        box-shadow: none;
+        .canvasSize:active,
+        .gameSpeed:active {
+            background-color: #0064bd;
+            box-shadow: none;
         }
 
         .center {
@@ -113,16 +143,17 @@
         }
 
     </style>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
 
-        const GAME_SPEED = 100;
+        let GAME_SPEED = 100;
         const CANVAS_BORDER_COLOUR = 'black';
         const CANVAS_BACKGROUND_COLOUR = 'white';
         const SNAKE_COLOUR = 'green';
         const SNAKE_BORDER_COLOUR = 'darkgreen';
         const FOOD_COLOUR = 'red';
         const FOOD_BORDER_COLOUR = 'black';
+
+        let snakeSpeed = GAME_SPEED; // initialise the default speed
 
         const smallSizeButton = document.getElementById('smallSize');
         const mediumSizeButton = document.getElementById('mediumSize');
@@ -132,6 +163,13 @@
         mediumSizeButton.addEventListener('click', () => changeCanvasSize('medium'));
         largeSizeButton.addEventListener('click', () => changeCanvasSize('large'));
 
+        const slowSpeedButton = document.getElementById('slowSpeed');
+        const mediumSpeedButton = document.getElementById('mediumSpeed');
+        const fastSpeedButton = document.getElementById('fastSpeed');
+
+        slowSpeedButton.addEventListener('click', () => changeGameSpeed('slow'));
+        mediumSpeedButton.addEventListener('click', () => changeGameSpeed('medium'));
+        fastSpeedButton.addEventListener('click', () => changeGameSpeed('fast'));
         
         const refreshButton = document.getElementById('refresh');
         const refreshPage = () => {
@@ -172,13 +210,37 @@
         document.addEventListener("keydown", changeDirection);
 
         /**
+        * allow user to pick starting speed
+        */
+        function changeGameSpeed(speed){
+
+            // adjust the speed based on user selection
+            switch (speed) {
+                case 'slow':
+                    snakeSpeed = GAME_SPEED * 2; // game speed = 200 (default is 100)
+                    console.log('slow' +snakeSpeed)
+                    break;
+                case 'medium':
+                    snakeSpeed = GAME_SPEED; // game speed = 100 = default
+                    console.log('med' +snakeSpeed)
+                    break;
+                case 'fast':
+                    snakeSpeed = GAME_SPEED / 2; // game speed = 50 (logs as 50 game speed but doesnt look like 50 game speed on screen)
+                    console.log('fast' + snakeSpeed)
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /**
          * Main function of the game
          * called repeatedly to advance the game
         */
         function main() {
             if (didGameEnd()) return;
 
-            const newGameSpeed = calculateGameSpeed(score);
+            const newGameSpeed = calculateGameSpeed(score, snakeSpeed);
 
             setTimeout(function onTick() {
                 changingDirection = false;
@@ -220,12 +282,11 @@
             drawSnake();
         }
 
-        /**
-         * increase game speed on each interval of 100
-         * score
-         */
-        function calculateGameSpeed(score){
-            return GAME_SPEED - Math.floor(score / 50) * 5;
+        // Function to calculate the game speed based on score and the user-selected starting speed
+        function calculateGameSpeed(score, startingSpeed) {
+            const speedIncrease = startingSpeed - Math.floor(score / 50) * 5;
+
+            return Math.max(GAME_SPEED, speedIncrease); // Ensure it doesn't go below the default speed
         }
 
         /**
@@ -267,7 +328,13 @@
             if (didEatFood){
                 
                 // audio prompt for eating food - currently breaks the game
-                //foodEatingPlayer.playVideo();
+                // without the if statement the game breaks + still doesnt play audio
+                console.log("Before playing video");
+                // Check if foodEatingPlayer is ready before playing the video
+                if (foodEatingPlayer && foodEatingPlayer.playVideo) {
+                    foodEatingPlayer.playVideo();
+                }
+                console.log("After playing video");
 
                 // increase score
                 score += 10;
@@ -367,12 +434,12 @@
         * @param {object} event - the keydown event
         */
         function changeDirection(event){
-            const LEFT = 65;
-            const RIGHT = 68;
-            const UP = 87;
-            const DOWN = 83;
+            const LEFT = 65; // A
+            const RIGHT = 68; // D
+            const UP = 87; // W
+            const DOWN = 83; // S
 
-            // define a delay in ms 
+            // define a delay in ms - not sure if delay helps
             const directionChangeDelay = 500;
 
             /**
@@ -434,6 +501,7 @@
                 }
             });
             initializeGameOverPlayer();
+            initializeFoodEatingPlayer();
         }
 
         function onPlayerReady(event) {
@@ -487,6 +555,9 @@
         // audio prompt for eating food
         var foodEatingPlayer;
 
+        // Add an event listener for the 'onReady' event when initializing the foodEatingPlayer
+        //foodEatingPlayer = initializeFoodEatingPlayer();
+
         function initializeFoodEatingPlayer(){
             foodEatingPlayer = new YT.Player('food-eating-player', {
                 height: '0',   // Set the height to 0 to make the player invisible
@@ -508,7 +579,7 @@
 
         function onFoodEatingPlayerReady(event){
             event.target.unMute();
-            event.target.setVolume(50);
+            event.target.setVolume(100);
         }
     </script>
 </body>
